@@ -7,23 +7,29 @@ import (
 )
 
 //Astar planning class
-type Astar struct {
-	MinX int
-	MaxX int
-	MinY int
-	MaxY int
 
-	XWidth   int
-	YWidth   int
+// in this code, we assume minX = 0, minY = 0
+// so, we don't xwid, ywid
+type Astar struct {
+	MaxX   int
+	MaxY   int
+	Width  int
+	Height int
+
 	MaxIndex int
 
-	ObjMap [][]bool //if object, it is true
+	CostMap [][]byte //for each object, object COST = 0xff
 
 	OpenSet   map[int]*AstarNode
 	CloseSet  map[int]*AstarNode
 	UpdateObj ModelUpdate
 	Current   *AstarNode
 }
+
+var motion = [8][3]float64{
+	{1.0, 0, 1.0}, {0, 1.0, 1.0}, {-1.0, 0, 1.0}, {0, -1.0, 1.0},
+	{-1.0, -1.0, math.Sqrt(2)}, {-1.0, 1.0, math.Sqrt(2)},
+	{1.0, -1.0, math.Sqrt(2)}, {1.0, 1.0, math.Sqrt(2)}}
 
 type Point struct {
 	X int
@@ -32,47 +38,6 @@ type Point struct {
 
 type ModelUpdate interface {
 	UpdateAstar(*Astar, color.RGBA, int) // add waittime
-}
-
-func NewAstar(objects [][2]int, objectRadius, resolution float64) *Astar {
-	a := &Astar{
-		MaxX: 0,
-		MaxY: 0,
-		MinX: 999999,
-		MinY: 999999,
-	}
-
-	for _, obj := range objects {
-		if obj[0] < a.MinX {
-			a.MinX = obj[0]
-		}
-		if obj[1] < a.MinY {
-			a.MinY = obj[1]
-		}
-		if obj[0] > a.MaxX {
-			a.MaxX = obj[0]
-		}
-		if obj[1] > a.MaxY {
-			a.MaxY = obj[1]
-		}
-	}
-
-	a.XWidth = a.MaxX - a.MinX
-	a.YWidth = a.MaxY - a.MinY
-
-	a.ObjMap = make([][]bool, a.XWidth+1)
-	for i := 0; i <= a.XWidth; i++ {
-		a.ObjMap[i] = make([]bool, a.YWidth+1)
-	}
-
-	count := 0
-	for _, o := range objects {
-		a.ObjMap[o[0]][o[1]] = true
-		count += 1
-	}
-	fmt.Printf("obj count %d", count)
-	a.MaxIndex = a.YWidth*a.XWidth - 1
-	return a
 }
 
 type AstarNode struct {
@@ -97,21 +62,14 @@ func newNode(ix, iy int, cost float64, pind int) *AstarNode {
 }
 
 func (a Astar) indToPosXY(index int) (int, int) {
-	px := a.MinX + index%a.XWidth
-	py := a.MinY + int(index/a.XWidth)
+	px := index % a.Width
+	py := int(index / a.Width)
 	return px, py
 }
 
-func (a Astar) indToIndXY(index int) (int, int) {
-	ix := index % a.XWidth
-	iy := index / a.XWidth
-	return ix, iy
-}
-
-func heuristic(n1, n2 *AstarNode) float64 {
-	//	w := 1.0
-	w := 0.50
-	d := w * math.Hypot(float64(n1.Ix)-float64(n2.Ix), float64(n1.Iy)-float64(n2.Iy))
+func heuristic(n1, n2 *AstarNode, weight float64) float64 {
+	//w := 0.50
+	d := weight * math.Hypot(float64(n1.Ix)-float64(n2.Ix), float64(n1.Iy)-float64(n2.Iy))
 	return d
 }
 
@@ -120,31 +78,26 @@ func (a Astar) verifyGrid(index int) bool {
 		return false
 	}
 	px, py := a.indToPosXY(index)
-
-	if px < a.MinX {
-		return false
-	} else if py < a.MinY {
-		return false
-	} else if px >= a.MaxX {
+	fmt.Printf("verify %d %d : %d\n", px, py, a.CostMap[px][py])
+	if px >= a.MaxX {
 		return false
 	} else if py >= a.MaxY {
 		return false
 	}
 
-	ix, iy := a.indToIndXY(index)
-	if a.ObjMap[ix][iy] {
+	if a.CostMap[px][py] == 0xff {
 		return false
 	}
 	return true
 }
 
 func (a Astar) nodeToInd(n *AstarNode) int {
-	index := n.Iy*a.XWidth + n.Ix
+	index := n.Iy*a.Width + n.Ix
 	return index
 }
 
 // Astar planing (sx,sy) is start, (gx,gy) is goal point
-func (a *Astar) Plan(sx, sy, gx, gy int) (route [][2]int, err error) {
+func (a *Astar) Plan(sx, sy, gx, gy int, weight float64) (route [][2]int, err error) {
 	nstart := newNode(sx, sy, 0.0, -1)
 	ngoal := newNode(gx, gy, 0.0, -1)
 
@@ -176,16 +129,17 @@ func (a *Astar) Plan(sx, sy, gx, gy int) (route [][2]int, err error) {
 
 		minCost := 1e19
 		minKey := -1
-		for key, val := range open_set {
-			calCost := val.Cost + heuristic(ngoal, val)
+		// find minimum cost node
+		for key, nextNode := range open_set {
+			calCost := nextNode.Cost + heuristic(ngoal, nextNode, weight)
 			if calCost < minCost {
 				minCost = calCost
 				minKey = key
 			}
 		}
 		cId := minKey
-		current := open_set[cId]
-		if a.UpdateObj != nil {
+		current := open_set[cId] // minimumNode
+		if a.UpdateObj != nil {  // update current!
 			a.Current = current
 			a.UpdateObj.UpdateAstar(a, color.RGBA{0xff, 0, 0, 0xff}, 0)
 		}
@@ -201,36 +155,40 @@ func (a *Astar) Plan(sx, sy, gx, gy int) (route [][2]int, err error) {
 		delete(open_set, cId)
 
 		close_set[cId] = current
-		if a.UpdateObj != nil {
+		if a.UpdateObj != nil { // display closed data!
 			a.Current = current
 			a.UpdateObj.UpdateAstar(a, color.RGBA{0xa0, 0xb0, 0xb0, 0xff}, 0)
 		}
 
 		var nId int
 		var node *AstarNode
-		motion := [8][3]float64{{1.0, 0, 1.0}, {0, 1.0, 1.0}, {-1.0, 0, 1.0}, {0, -1.0, 1.0}, {-1.0, -1.0, math.Sqrt(2)}, {-1.0, 1.0, math.Sqrt(2)}, {1.0, -1.0, math.Sqrt(2)}, {1.0, 1.0, math.Sqrt(2)}}
 		for _, v := range motion {
-			node = newNode(current.Ix+int(v[0]), current.Iy+int(v[1]), current.Cost+v[2], cId)
-			nId = a.nodeToInd(node)
-
-			if !a.verifyGrid(a.nodeToInd(node)) {
+			nx := current.Ix + int(v[0])
+			if nx < 0 || nx > a.MaxX {
 				continue
 			}
-
+			ny := current.Iy + int(v[1])
+			if ny < 0 || ny > a.MaxY {
+				continue
+			}
+			if a.CostMap[nx][ny] == 0xff {
+				continue
+			}
 			// in the closed set?
+			nId = nx + ny*a.Width
 			if _, ok := close_set[nId]; ok {
 				continue
 			}
-
-			// in the open set?
-			if _, ok := open_set[nId]; !ok {
-				// add new open set
-				if a.UpdateObj != nil {
-					a.Current = node
-					a.UpdateObj.UpdateAstar(a, color.RGBA{0x00, 0xb0, 0x0b0, 0xff}, 0)
-				}
-				open_set[nId] = node
+			if _, ok := open_set[nId]; ok {
+				continue
 			}
+			node = newNode(nx, ny, current.Cost+v[2]+float64(a.CostMap[nx][ny]), cId)
+			if a.UpdateObj != nil {
+				a.Current = node
+				a.UpdateObj.UpdateAstar(a, color.RGBA{0x00, 0xb0, 0x0b0, 0xff}, 0)
+			}
+			// add new openset!
+			open_set[nId] = node
 		}
 	}
 }

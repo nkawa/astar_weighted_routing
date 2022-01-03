@@ -20,6 +20,7 @@ type ClickPoint struct {
 }
 
 type Field struct {
+	Astar       *astar_wr.Astar
 	Area        []bool
 	OuterWidth  int
 	OuterHeight int
@@ -126,18 +127,28 @@ func (g *Field) Draw(screen *ebiten.Image) {
 		g.pixels = make([]byte, screenWidth*screenHeight*4)
 		//		log.Printf("Len %d", len(g.pixels))
 		pix = g.pixels
-		for _, o := range g.Objects { // draw pix for each objects
-			x := o[0]
-			y := o[1]
-			idx := (y*screenWidth + x) * 4
-			for k := 0; k < 3; k++ {
-				pix[idx+k] = 0xff
-			}
+		/*		for _, o := range g.Objects { // draw pix for each objects
+				x := o[0]
+				y := o[1]
+				idx := (y*screenWidth + x) * 4
+				for k := 0; k < 3; k++ {
+					pix[idx+k] = 0xff
+				}
 
+			}*/
+		for x := 0; x < g.Astar.Width; x++ {
+			for y := 0; y < g.Astar.Height; y++ {
+				idx := (y*screenWidth + x) * 4
+				for k := 0; k < 3; k++ {
+					pix[idx+k] = 0xff - g.Astar.CostMap[x][y]*7
+				}
+			}
 		}
+
 	} else {
 		pix = g.pixels
 	}
+
 	//	log.Printf("CObject len %d", len(g.CObjects))
 	for _, o := range g.CObjects { // draw pix for each objects
 		x := o[0]
@@ -155,8 +166,8 @@ func (g *Field) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("X: %d, Y: %d , %t", x, y, clickState))
 	//	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		log.Printf("Click %d,%d,%t", x, y, clickState)
-		if lx != x || ly != y {
+		if (lx != x || ly != y) && x > 0 && y > 0 {
+			log.Printf("Click %d,%d,%t", x, y, clickState)
 			if clickState {
 				clickPoint.X1 = x
 				clickPoint.Y1 = y
