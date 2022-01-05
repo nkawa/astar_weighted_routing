@@ -78,7 +78,7 @@ func (a Astar) verifyGrid(index int) bool {
 		return false
 	}
 	px, py := a.indToPosXY(index)
-	fmt.Printf("verify %d %d : %d\n", px, py, a.CostMap[px][py])
+	//	fmt.Printf("verify %d %d : %d\n", px, py, a.CostMap[px][py])
 	if px >= a.MaxX {
 		return false
 	} else if py >= a.MaxY {

@@ -1,7 +1,6 @@
 package astar_wr
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -60,7 +59,7 @@ func WeightedAstar(objects [][2]int, iteration int) *Astar {
 		a.CostMap[o[0]][o[1]] = 0xff
 		count += 1
 	}
-	fmt.Printf("obj count %d", count)
+	//	log.Printf("obj count %d", count)
 
 	for iteration > 0 {
 		for x := 0; x < a.Width; x++ {
