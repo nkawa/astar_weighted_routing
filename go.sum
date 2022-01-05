@@ -1,6 +1,0 @@
-github.com/Arafatk/glot v0.0.0-20180312013246-79d5219000f0/go.mod h1:o0O8gFiTfVp4g5QcQJ1iMLw6ROiy9BITaiBbEiwz9h8=
-github.com/jbuchbinder/gopnm v0.0.0-20150223212718-5176c556b9ce/go.mod h1:k4IRLYBcpoQAIqDzFcBFY3eSoVnCvN5nfq3Wqm0ZLp8=
-github.com/nkawa/astar_golang v0.0.0-20211227102720-457b8e49c916 h1:d5pWIZ29GM4cX8TT2mIOUjGU0RQ2z8EVuOA8V/SoJ5g=
-github.com/nkawa/astar_golang v0.0.0-20211227102720-457b8e49c916/go.mod h1:LZ92+4jVrseGGnQi7BzlJEjT84uXW/0c8cqsTq4JWyc=
-gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
-gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
