@@ -2,3 +2,5 @@ github.com/nkawa/astar_weighted_routing v0.0.1 h1:4FQykZO9cXzwladX0N60p0QnTzRJV6
 github.com/nkawa/astar_weighted_routing v0.0.1/go.mod h1:TXbBc6PrFv6jtn+6vZ6U5mETjqNfyyOQFDRbaE3RHYg=
 github.com/nkawa/astar_weighted_routing v0.0.2 h1:+fThI/f9zBwBcTbIxfIgrPg3QYFnaOErCe9ET1bDJR8=
 github.com/nkawa/astar_weighted_routing v0.0.2/go.mod h1:TXbBc6PrFv6jtn+6vZ6U5mETjqNfyyOQFDRbaE3RHYg=
+github.com/wlbr/mule v0.0.0-20210816202329-8890bf427c71 h1:K1qiq01oppNsPQ6BjjxB0Jg0St+r3OF9jotxMzaEmE4=
+github.com/wlbr/mule v0.0.0-20210816202329-8890bf427c71/go.mod h1:uDXgZTfL0uJWiY/MQKcqI5VPQV8PCooNsWXozHf7CJ8=
