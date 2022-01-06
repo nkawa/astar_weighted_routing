@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"image"
@@ -43,7 +42,7 @@ func main() {
 		Y0, _ = strconv.Atoi(arg[1])
 		X1, _ = strconv.Atoi(arg[2])
 		Y1, _ = strconv.Atoi(arg[3])
-		fmt.Printf("Conv %s into %d,%d-%d,%d\n", args[0], X0, Y0, X1, Y1)
+		log.Printf("Routing  %d,%d-%d,%d", X0, Y0, X1, Y1)
 
 	} else {
 		flag.Usage()
@@ -66,7 +65,13 @@ func main() {
 
 	route, err := aStar.Plan(X0, Y0, X1, Y1, *weight) //from point(10,10) to point(120,120)
 
-	jstr, _ := json.Marshal(route) //, "", "	")
-	fmt.Print("Output:", jstr, "\n")
+	//	jstr, _ := json.Marshal(route) //, "", "	")
+	//	fmt.Print("Output:", jstr, "\n")
+	fmt.Printf("[")
+	for i := range route {
+		p := route[len(route)-i-1] // reverse order
+		fmt.Printf("%d,%d,", p[0], p[1])
+	}
+	fmt.Printf("]\n")
 
 }
