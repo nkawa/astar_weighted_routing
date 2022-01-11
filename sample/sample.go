@@ -22,7 +22,7 @@ var (
 //	oweight = flag.Float64("oweight", 1, "Weight of object radius")
 )
 
-func SetRoute(field *Field, route [][2]int) {
+func SetRoute(field *Field, route [][2]int, color int) {
 
 	for field.pixels == nil {
 		log.Printf("Wait for update")
@@ -31,7 +31,7 @@ func SetRoute(field *Field, route [][2]int) {
 
 	for i := range route {
 		p := route[len(route)-i-1] // reverse order
-		field.SetPoint(int(p[0]), int(p[1]), 0xff0000)
+		field.SetPoint(int(p[0]), int(p[1]), color)
 		time.Sleep(time.Nanosecond * 1)
 	}
 
@@ -52,7 +52,13 @@ func findRoute(field *Field, aStar *astar_wr.Astar) {
 			} else {
 				fmt.Print("route length:", len(route), "\n")
 			}
-			SetRoute(field, route)
+
+			SetRoute(field, route, 0x0000ff00)
+
+			nr := astar_wr.RouteOptimization(route)
+			fmt.Print("Optimized route length:", len(nr), "\n")
+			SetRoute(field, nr, 0xff000000)
+
 		}
 	}
 }

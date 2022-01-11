@@ -27,6 +27,7 @@ var (
 	rcount    = flag.Int("rcount", 1, "How many routing output")
 	weight    = flag.Float64("hweight", 0.5, "Weight of Astar heuristic (0->no dist)")
 	iteration = flag.Int("iteration", 6, "Iteration for Object range delusion")
+	optimize  = flag.Bool("optimize", false, "Optimize route")
 
 //	raduis  = flag.Float64("radius", 2, "Weight object raduis for weight")
 //	oweight = flag.Float64("oweight", 1, "Weight of object radius")
@@ -67,7 +68,7 @@ func main() {
 		Y1, _ = strconv.Atoi(arg[3])
 		log.Printf("Routing  %d,%d-%d,%d", X0, Y0, X1, Y1)
 
-	} else {
+	} else { // Using random point
 		if *imgFile == "" {
 			rt = pTokaiRouting()
 			if *seed < 0 {
@@ -85,7 +86,7 @@ func main() {
 
 	var imgReader io.Reader
 	if *imgFile == "" { // need to load from resource
-		dt, _ := hand_editResource() // mule generated resource
+		dt, _ := hand_editResource() // mule (go embedded) generated resource
 		imgReader = bytes.NewReader(dt)
 	} else {
 		file, err := os.Open(*imgFile)
@@ -108,6 +109,12 @@ func main() {
 	//	fmt.Print("Output:", jstr, "\n")
 	for *rcount > 0 {
 		route, _ := aStar.Plan(X0, Y0, X1, Y1, *weight) //from point(10,10) to point(120,120)
+
+		// optimize?
+		if *optimize { //
+			route = astar_wr.RouteOptimization(route)
+		}
+
 		fmt.Printf("[")
 		for i := range route {
 			p := route[len(route)-i-1] // reverse order

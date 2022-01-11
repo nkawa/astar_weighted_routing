@@ -155,7 +155,7 @@ func (g *Field) Draw(screen *ebiten.Image) {
 		y := o[1]
 		color := o[2]
 		idx := int(y*screenWidth+x) * 4
-		pix[idx] = 0xff //byte(color >> 24)
+		pix[idx] = byte(color >> 24)
 		pix[idx+1] = byte((color >> 16) % 0xff)
 		pix[idx+2] = byte((color >> 8) % 0xff)
 		pix[idx+3] = byte(color % 0xff)

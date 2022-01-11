@@ -205,3 +205,24 @@ func (a Astar) finalPath(ngoal *AstarNode, closeSet map[int]*AstarNode) (route [
 	}
 	return route
 }
+
+// optimizing route
+func RouteOptimization(rt [][2]int) [][2]int {
+	nrt := make([][2]int, 1, 1)
+	nrt[0] = rt[0]
+	ldx := rt[1][0] - rt[0][0]
+	ldy := rt[1][1] - rt[0][1]
+
+	for i := 2; i < len(rt); i++ {
+		dx := rt[i][0] - rt[i-1][0]
+		dy := rt[i][1] - rt[i-1][1]
+		if ldx != dx || ldy != dy {
+			nrt = append(nrt, rt[i-1])
+		}
+		ldx = dx
+		ldy = dy
+	}
+	nrt = append(nrt, rt[len(rt)-1])
+	//	}
+	return nrt
+}
